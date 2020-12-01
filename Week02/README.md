@@ -10,7 +10,7 @@ Q:
 3. 考虑底层数据库可能更换(mongodb/mysql...), 不能直接返回 sql.ErrNoRows，这里我在 dao 层利用**不透明错误**的玩法，自己定义了错误类型，并向外提供 IsQueryNoRowsError 方法
 
 dao 层代码 Week02/app/dao/user/user.go 具体如下:
-```
+```go
 package user
 
 import (
@@ -55,7 +55,7 @@ func (d *Dao) query(sql string) (rows *user.User, err error) {
 ```
 dao 层 error types 代码 Week02/app/dao/errors/errors.go
 这里实践了 不透明错误
-```
+```go
 package errors
 
 import (
@@ -91,7 +91,7 @@ func IsQueryNoRowsError(err error) bool {
 ```
 
 api 层代码 Week02/main.go
- ```
+ ```go
 package main
 
 import (
