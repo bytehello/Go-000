@@ -7,7 +7,7 @@ Q:
 
 1. dao 层作为调用其他三方库 database/sql 的最后一层，应该需要通过wrap保存根因（课上老师明确讲了哦）
 2. 因为 **HANDLE ONCE** 原则，所以 dao 包了一层传递给 service 层时，service 层也需要原封不动的继续网上抛，交给 api 层处理。当然这里也可以 service 降级处理,我个人认为还是抛错误到上层比较好
-3. 考虑底层数据库可能更换(mongodb/mysql...), 不能直接返回 sql.ErrNoRows，这里我在 dao 层利用**不透明错误**的玩法，自己定义了错误类型，并向外提供 IsQueryNoRowsError 方法
+3. 考虑底层数据库可能更换(mongodb/mysql...), 不能直接返回 sql.ErrNoRows，这里我在 dao 层利用**不透明错误**的玩法，自己定义了错误类型，并向外提供 IsQueryNoRowsError 方法,最外层通过 pkg/errors 的Cause获取根因，然后再调用IsQueryNoRowsError就可以判断是否是查询没结果
 
 dao 层代码 Week02/app/dao/user/user.go 具体如下:
 ```go
@@ -117,6 +117,25 @@ func main() {
 
 
 ``` 
+
+output is 
+```
+HTTP/1.1 404 
+stack strace : 
+msg is no result, err is "sql: no rows in result set"
+wrap message : failed sql is "SELECT * FROM user WHERE id = 0" 
+Go-000/Week02/app/dao/user.(*Dao).FindById
+        /Users/Gechanghang/Code/Go-000/Week02/app/dao/user/user.go:29
+Go-000/Week02/app/service/user.(*Service).FindById
+        /Users/Gechanghang/Code/Go-000/Week02/app/service/user/user.go:19
+main.main
+        /Users/Gechanghang/Code/Go-000/Week02/main.go:12
+runtime.main
+        /usr/local/go/src/runtime/proc.go:200
+runtime.goexit
+        /usr/local/go/src/runtime/asm_amd64.s:1337
+
+```
 
 
 ## go error 学习笔记
